@@ -1,8 +1,6 @@
-CC = g++-6
-LANG_VER = -std=c++1z
-DIAG_FLAGS = -Wall -Werror -Wpedantic
-
-%: %.cpp 
-	$(CC) $(LANG_VER) $(DIAG_FLAGS) -o $@ $@.cpp
+include ../automation/compiler.mk
+include ../automation/lang.mk
+include ../automation/diag.mk
+include ../automation/exec_target.mk
 
 all: basic_resource_test
