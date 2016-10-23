@@ -22,5 +22,7 @@ int main() {
   auto other_steal = fm::file_resource::steal(file);
   if (file)
     throw fm::test_error{"File was not stolen"};
+  if (!other_steal)
+    throw fm::test_error{"Underlying resource not handled"};
   return 0;
 }
