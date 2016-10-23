@@ -14,6 +14,14 @@ struct FileTraits : public fm::resource_traits<std::FILE *> {
 using file_resource = basic_resource<std::FILE *, FileTraits>;
 }
 
+namespace std {
+namespace C {
+struct FILE : public fm::file_resource {
+  using fm::file_resource::file_resource;
+};
+}
+}
+
 int main() {
   fm::file_resource other{"non-existent", "r"};
   auto file = std::fopen("non-existent-steal", "w");
@@ -24,7 +32,7 @@ int main() {
     throw fm::test_error{"File was not stolen"};
   if (!other_steal)
     throw fm::test_error{"Underlying resource not handled"};
-  auto move_steal = std::move(other_steal);
+  std::C::FILE move_steal = std::move(other_steal);
   if (other_steal || !move_steal)
     throw fm::test_error{"Underlying resource not moved"};
   return 0;

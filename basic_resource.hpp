@@ -5,23 +5,15 @@
 
 namespace fm {
 
-template <typename T> struct resource_traits;
+template <typename T> struct resource_traits {};
 
-template <> struct resource_traits<int> {
-  constexpr static int initial = -1;
-
-  static int constructor() { return initial; }
-  static void destructor(int &t) { t = initial; }
-};
+template <> struct resource_traits<int> { constexpr static int initial = -1; };
 
 template <typename T> struct resource_traits<T *> {
   constexpr static T *initial = nullptr;
-
-  static T *constructor() { return initial; }
-  static void destructor(T *&t) { t = initial; }
 };
 
-template <typename T = int, typename Traits = resource_traits<T>>
+template <typename T, typename Traits = resource_traits<T>>
 class basic_resource {
   T t = Traits::initial;
 
