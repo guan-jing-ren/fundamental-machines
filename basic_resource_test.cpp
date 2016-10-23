@@ -15,11 +15,8 @@ using file_resource = basic_resource<std::FILE *, FileTraits>;
 
 int main() {
   auto file = std::fopen("non-existent", "r");
-  auto file_resource = fm::basic_resource<std::FILE *>::steal(file);
-  fclose(file_resource);
-
-  fm::basic_resource<std::FILE *> resource;
 
   fm::file_resource other{"non-existent", "r"};
+  auto other_steal = fm::file_resource::steal(file);
   return 0;
 }
