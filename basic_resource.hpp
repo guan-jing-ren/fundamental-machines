@@ -56,8 +56,6 @@ public:
     return t1;
   }
 };
-
-#include "basic_resource.ipp"
 }
 
 #endif
