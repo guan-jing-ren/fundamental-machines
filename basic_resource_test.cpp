@@ -91,6 +91,36 @@ struct FILE : public fm::file_resource {
                   "Buffer type is not trivially copyable");
     return std::fwrite(buffer, sizeof(T), N, *this);
   }
+
+  auto get() { return std::fgetc(*this); }
+  auto put(unsigned char c) { return std::fputc(c, *this); }
+
+  auto get(char *buffer, std::size_t length) {
+    return std::fgets(buffer, length, *this);
+  }
+  template <std::size_t N> auto gets(char (&buffer)[N]) {
+    return std::fgets(buffer, N, *this);
+  }
+  FILE &put(const char *buffer) {
+    std::fputs(buffer, *this);
+    return *this;
+  }
+  auto unget(int c) { return std::ungetc(c, *this); }
+
+  auto getw() { return std::fgetwc(*this); }
+  auto put(wchar_t c) { return std::fputwc(c, *this); }
+
+  auto get(wchar_t *buffer, std::size_t length) {
+    return std::fgetws(buffer, length, *this);
+  }
+  template <std::size_t N> auto gets(wchar_t (&buffer)[N]) {
+    return std::fgetws(buffer, N, *this);
+  }
+  FILE &put(const wchar_t *buffer) {
+    std::fputws(buffer, *this);
+    return *this;
+  }
+  auto unget(wint_t c) { return std::ungetwc(c, *this); }
 };
 }
 }
