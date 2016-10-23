@@ -5,4 +5,4 @@ include ../automation/exec_target.mk
 
 basic_resource_test: file_resource.hpp
 
-all: basic_resource_test
+all: basic_resource_test basic_register_test
