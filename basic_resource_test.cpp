@@ -17,8 +17,10 @@ using file_resource = basic_resource<std::FILE *, FileTraits>;
 int main() {
   fm::file_resource other{"non-existent", "r"};
   auto file = std::fopen("non-existent-steal", "w");
-  if(!file) throw std::runtime_error{"File did not open properly"};
+  if (!file)
+    throw std::runtime_error{"File did not open properly"};
   auto other_steal = fm::file_resource::steal(file);
-  if(file) throw std::runtime_error{"File was not stolen"};
+  if (file)
+    throw std::runtime_error{"File was not stolen"};
   return 0;
 }

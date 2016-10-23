@@ -50,7 +50,7 @@ public:
 
   operator T() { return t; }
 
-  T* release() {
+  T *release() {
     T t1 = t;
     t = Traits::initial;
     return t1;
