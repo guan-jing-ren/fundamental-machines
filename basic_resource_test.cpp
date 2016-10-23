@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstdarg>
 #include <type_traits>
 #include "test_utils.hpp"
 #include "basic_resource.hpp"
@@ -69,25 +70,25 @@ struct FILE : public fm::file_resource {
   }
 
   template <typename T> auto read(T *buffer, std::size_t count) {
-    static_assert(std::is_trivially_copyable<T>{},
+    static_assert(std::is_trivially_copyable<T>::value,
                   "Buffer type is not trivially copyable");
     return std::fread(buffer, sizeof(T), count, *this);
   }
 
   template <typename T, std::size_t N> auto read(T (&buffer)[N]) {
-    static_assert(std::is_trivially_copyable<T>{},
+    static_assert(std::is_trivially_copyable<T>::value,
                   "Buffer type is not trivially copyable");
     return std::fread(buffer, sizeof(T), N, *this);
   }
 
   template <typename T> auto write(T *buffer, std::size_t count) {
-    static_assert(std::is_trivially_copyable<T>{},
+    static_assert(std::is_trivially_copyable<T>::value,
                   "Buffer type is not trivially copyable");
     return std::fwrite(buffer, sizeof(T), count, *this);
   }
 
   template <typename T, std::size_t N> auto write(T (&buffer)[N]) {
-    static_assert(std::is_trivially_copyable<T>{},
+    static_assert(std::is_trivially_copyable<T>::value,
                   "Buffer type is not trivially copyable");
     return std::fwrite(buffer, sizeof(T), N, *this);
   }
@@ -98,7 +99,7 @@ struct FILE : public fm::file_resource {
   auto get(char *buffer, std::size_t length) {
     return std::fgets(buffer, length, *this);
   }
-  template <std::size_t N> auto gets(char (&buffer)[N]) {
+  template <std::size_t N> auto get(char (&buffer)[N]) {
     return std::fgets(buffer, N, *this);
   }
   FILE &put(const char *buffer) {
@@ -113,7 +114,7 @@ struct FILE : public fm::file_resource {
   auto get(wchar_t *buffer, std::size_t length) {
     return std::fgetws(buffer, length, *this);
   }
-  template <std::size_t N> auto gets(wchar_t (&buffer)[N]) {
+  template <std::size_t N> auto get(wchar_t (&buffer)[N]) {
     return std::fgetws(buffer, N, *this);
   }
   FILE &put(const wchar_t *buffer) {
@@ -121,6 +122,74 @@ struct FILE : public fm::file_resource {
     return *this;
   }
   auto unget(wint_t c) { return std::ungetwc(c, *this); }
+
+  auto tell() { return std::ftell(*this); }
+  template <int origin> FILE &seek(long offset) {
+    static_assert(origin == SEEK_SET || origin == SEEK_CUR || origin = SEEK_END,
+                  "Provided seek origin invalid, choose one of SEEK_SET, "
+                  "SEEK_CUR or SEEK_END");
+    std::fseek(*this, offset, origin);
+    return *this;
+  }
+
+  auto getpos() {
+    std::fpos_t pos;
+    std::fgetpos(*this, &pos);
+    return pos;
+  }
+  FILE &setpos(const std::fpos_t &pos) {
+    std::fsetpos(*this, &pos);
+    return *this;
+  }
+
+  FILE &rewind() {
+    std::rewind(*this);
+    return *this;
+  }
+
+  FILE &clearerr() {
+    std::clearerr(*this);
+    return *this;
+  }
+  bool eof() { return std::feof(*this); }
+  bool error() { return std::ferror(*this); }
+
+  static FILE tmpfile() {
+    auto f = std::tmpfile();
+    return FILE::steal(f);
+  }
+
+  template <typename... T> auto scan(const char *format, T *... t) {
+    return std::fscanf(*this, format, t...);
+  }
+
+  template <typename... T> auto scan(const wchar_t *format, T *... t) {
+    return std::fwscanf(*this, format, t...);
+  }
+
+  template <typename... T> auto scan(const char *format, va_list vlist) {
+    return std::vfscanf(*this, format, vlist);
+  }
+
+  template <typename... T> auto scan(const wchar_t *format, va_list vlist) {
+    return std::vfwscanf(*this, format, vlist);
+  }
+
+  template <typename... T> auto print(const char *format, T &&... t) {
+    return std::fprintf(*this, format, t...);
+  }
+
+  template <typename... T> auto print(const wchar_t *format, T &&... t) {
+    return std::fwprintf(*this, format, t...);
+  }
+
+  template <typename... T> auto print(const char *format, va_list vlist) {
+    return std::vfprintf(*this, format, vlist);
+  }
+
+  template <typename... T> auto print(const wchar_t *format, va_list vlist) {
+    return std::vfwprintf(*this, format, vlist);
+  }
 };
 }
 }
