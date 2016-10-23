@@ -1,5 +1,5 @@
 #include <cstdio>
-#include <stdexcept>
+#include "test_utils.hpp"
 #include "basic_resource.hpp"
 
 namespace fm {
@@ -18,9 +18,9 @@ int main() {
   fm::file_resource other{"non-existent", "r"};
   auto file = std::fopen("non-existent-steal", "w");
   if (!file)
-    throw std::runtime_error{"File did not open properly"};
+    throw fm::test_error{"File did not open properly"};
   auto other_steal = fm::file_resource::steal(file);
   if (file)
-    throw std::runtime_error{"File was not stolen"};
+    throw fm::test_error{"File was not stolen"};
   return 0;
 }
