@@ -15,6 +15,7 @@ template <typename T> struct resource_traits<T *> {
 
 template <typename T, typename Traits = resource_traits<T>>
 class basic_resource {
+protected:
   T t = Traits::initial;
 
 public:
