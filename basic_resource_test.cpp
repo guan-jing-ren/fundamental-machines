@@ -24,5 +24,8 @@ int main() {
     throw fm::test_error{"File was not stolen"};
   if (!other_steal)
     throw fm::test_error{"Underlying resource not handled"};
+  auto move_steal = std::move(other_steal);
+  if (other_steal || !move_steal)
+    throw fm::test_error{"Underlying resource not moved"};
   return 0;
 }
