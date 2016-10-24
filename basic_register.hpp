@@ -78,10 +78,24 @@ template <typename E, std::size_t... fields> struct basic_register {
                                        !std::is_pointer<E>::value> * = nullptr)
       : r(r) {}
 
-  template <field_accessor_type e> void set(value_type v) {
+  template <field_accessor_type e>
+  auto set(value_type v)
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                          std::is_pointer<E>::value> {
     constexpr auto sum =
         detail::sum(e, std::integer_sequence<std::size_t, 0, fields...>{});
     static_assert(sum < size, "Field bit offset exceeds limits");
+    *r |= v << sum;
+  }
+
+  template <field_accessor_type e>
+  auto set(value_type v)
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                          !std::is_pointer<E>::value> {
+    constexpr auto sum =
+        detail::sum(e, std::integer_sequence<std::size_t, 0, fields...>{});
+    static_assert(sum < size, "Field bit offset exceeds limits");
+    r |= v << sum;
   }
 };
 }
