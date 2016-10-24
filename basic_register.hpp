@@ -80,6 +80,8 @@ template <typename E, std::size_t... fields> struct basic_register {
 
   template <field_accessor_type e>
   static void set(volatile value_type &r, value_type v) {
+    static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
+                  "Field accessor does not address field");
     constexpr auto sum =
         detail::sum(e, std::integer_sequence<std::size_t, 0, fields...>{});
     static_assert(sum < size, "Field bit offset exceeds limits");
