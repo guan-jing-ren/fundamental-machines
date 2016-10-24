@@ -1,6 +1,5 @@
 #include "basic_register.hpp"
-#include <iostream>
-#include <bitset>
+#include "test_utils.hpp"
 
 enum class RegField { FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH };
 
@@ -13,7 +12,9 @@ int main() {
   reg2.set<RegField::SECOND>(63);
   reg2.set<RegField::FIFTH>(7);
 
-  std::cout << std::bitset<32>{*reg.r}.to_string() << std::endl;
-  std::cout << std::bitset<32>{reg2.r}.to_string() << std::endl;
+  if (r != 0b00000000000111000000000001111100)
+    throw fm::test_error{"Memory mapped register test failed"};
+  if (reg2.r != 0b00000000000111000000000001111100)
+    throw fm::test_error{"Value register test failed"};
   return 0;
 }
