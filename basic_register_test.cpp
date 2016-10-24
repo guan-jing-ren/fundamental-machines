@@ -1,5 +1,7 @@
 #include "basic_register.hpp"
 #include "test_utils.hpp"
+#include <iostream>
+#include <bitset>
 
 enum class RegField { FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH };
 
@@ -16,14 +18,22 @@ int main() {
     throw fm::test_error{"Memory mapped register test failed"};
   if (reg2.r != 0b00000000000111000000000001111100)
     throw fm::test_error{"Value register test failed"};
-  if (reg.get<RegField::SECOND>() != 0b011111)
+  if (reg.get<RegField::SECOND>() != 0b11111)
     throw fm::test_error{"Field retrieval incorrect value"};
-  if (reg.get<RegField::FIFTH>() != 0b0111)
+  if (reg.get<RegField::FIFTH>() != 0b111)
     throw fm::test_error{"Field retrieval incorrect value"};
-  if (reg2.get<RegField::SECOND>() != 0b011111)
+  if (reg2.get<RegField::SECOND>() != 0b11111)
     throw fm::test_error{"Field retrieval incorrect value"};
-  if (reg2.get<RegField::FIFTH>() != 0b0111)
+  if (reg2.get<RegField::FIFTH>() != 0b111)
     throw fm::test_error{"Field retrieval incorrect value"};
+
+  reg.set<RegField::THIRD>(13);
+  reg2.set<RegField::THIRD>(13);
+
+  if (!reg.test<RegField::THIRD>(0b1101))
+    throw fm::test_error{"Field test failed"};
+  if (!reg2.test<RegField::THIRD>(0b1101))
+    throw fm::test_error{"Field test failed"};
 
   return 0;
 }

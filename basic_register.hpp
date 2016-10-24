@@ -134,18 +134,47 @@ template <typename E, std::size_t... fields> struct basic_register {
   }
 
   template <field_accessor_type e>
-  auto get()
+  auto get() volatile
       -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
                               !std::is_pointer<E>::value,
                           value_type> {
     return get<e>(r);
   }
+
+  template <field_accessor_type e>
+  static bool test(volatile value_type r, value_type v) {
+    static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
+                  "Field accessor does not address field");
+    constexpr auto offset =
+        detail::sum(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(offset < size, "Field bit offset exceeds limits");
+    constexpr auto m =
+        detail::mask(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(detail::power_of_two(m + 1), "Mask is not all 1's");
+    return ((r >> offset) & m) == v;
+  }
+
+  template <field_accessor_type e>
+  auto test(value_type v) volatile
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                              std::is_pointer<E>::value,
+                          bool> {
+    return test<e>(*r, v);
+  }
+
+  template <field_accessor_type e>
+  auto test(value_type v) volatile
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                              !std::is_pointer<E>::value,
+                          bool> {
+    return test<e>(r, v);
+  }
 };
 
 template <typename E, std::size_t... fields>
-using hardware_register = basic_register<E, fields...>;
+using hardware_register = volatile basic_register<E, fields...>;
 template <typename E, std::size_t... fields>
-using memory_mapped_register = basic_register<E *, fields...>;
+using memory_mapped_register = volatile basic_register<E *, fields...>;
 }
 
 #endif
