@@ -112,6 +112,11 @@ template <typename E, std::size_t... fields> struct basic_register {
     set<e>(r, v);
   }
 };
+
+template <typename E, std::size_t... fields>
+using hardware_register = basic_register<E, fields...>;
+template <typename E, std::size_t... fields>
+using memory_mapped_register = basic_register<E *, fields...>;
 }
 
 #endif
