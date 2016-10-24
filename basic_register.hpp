@@ -111,6 +111,35 @@ template <typename E, std::size_t... fields> struct basic_register {
                           !std::is_pointer<E>::value> {
     set<e>(r, v);
   }
+
+  template <field_accessor_type e>
+  static value_type get(volatile value_type &r) {
+    static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
+                  "Field accessor does not address field");
+    constexpr auto offset =
+        detail::sum(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(offset < size, "Field bit offset exceeds limits");
+    constexpr auto m =
+        detail::mask(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(detail::power_of_two(m + 1), "Mask is not all 1's");
+    return (r >> offset) & m;
+  }
+
+  template <field_accessor_type e>
+  auto get()
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                              std::is_pointer<E>::value,
+                          value_type> {
+    return get<e>(*r);
+  }
+
+  template <field_accessor_type e>
+  auto get()
+      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
+                              !std::is_pointer<E>::value,
+                          value_type> {
+    return get<e>(r);
+  }
 };
 
 template <typename E, std::size_t... fields>
