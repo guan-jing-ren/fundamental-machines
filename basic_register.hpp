@@ -43,6 +43,17 @@ constexpr std::size_t sum(E e, std::integer_sequence<std::size_t, fields...>) {
   }
   return total;
 }
+
+template <std::size_t... fields> constexpr std::size_t width[] = {fields...};
+
+template <typename E, std::size_t... fields>
+constexpr std::size_t mask(E e, std::integer_sequence<std::size_t, fields...>) {
+  std::size_t m = 1;
+  for (std::size_t c = 0; c < width<fields...>[static_cast<std::size_t>(e)];
+       ++c)
+    m <<= 1;
+  return m - 1;
+}
 }
 
 template <typename E, std::size_t... fields> struct basic_register {
@@ -82,10 +93,11 @@ template <typename E, std::size_t... fields> struct basic_register {
   static void set(volatile value_type &r, value_type v) {
     static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
                   "Field accessor does not address field");
-    constexpr auto sum =
-        detail::sum(e, std::integer_sequence<std::size_t, 0, fields...>{});
-    static_assert(sum < size, "Field bit offset exceeds limits");
-    r |= v << sum;
+    constexpr auto offset =
+        detail::sum(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(offset < size, "Field bit offset exceeds limits");
+    r |= ((v & detail::mask(e, std::integer_sequence<std::size_t, fields...>{}))
+          << offset);
   }
 
   template <field_accessor_type e>
