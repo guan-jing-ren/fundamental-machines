@@ -3,7 +3,7 @@
 
 enum class RegField { FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH };
 
-fm::detail::unit_t<32> r;
+fm::detail::unit_t<32> r = 0;
 int main() {
   fm::memory_mapped_register<RegField, 2, 5, 4, 7, 32 - 18> reg = &r;
   reg.set<RegField::SECOND>(63);

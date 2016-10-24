@@ -99,14 +99,14 @@ template <typename E, std::size_t... fields> struct basic_register {
   }
 
   template <field_accessor_type e>
-  auto set(value_type v)
+  auto set(value_type v) volatile
       -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
                           std::is_pointer<E>::value> {
     set<e>(*r, v);
   }
 
   template <field_accessor_type e>
-  auto set(value_type v)
+  auto set(value_type v) volatile
       -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
                           !std::is_pointer<E>::value> {
     set<e>(r, v);
@@ -126,7 +126,7 @@ template <typename E, std::size_t... fields> struct basic_register {
   }
 
   template <field_accessor_type e>
-  auto get()
+  auto get() volatile
       -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
                               std::is_pointer<E>::value,
                           value_type> {
