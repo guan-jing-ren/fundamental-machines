@@ -30,6 +30,19 @@ template <> struct unit<16> { using type = std::uint16_t; };
 template <> struct unit<32> { using type = std::uint32_t; };
 template <> struct unit<64> { using type = std::uint64_t; };
 template <std::size_t N> using unit_t = typename unit<N>::type;
+
+template <typename E, std::size_t... fields>
+constexpr std::size_t sum(E e, std::integer_sequence<std::size_t, fields...>) {
+  constexpr std::size_t fs[] = {fields...};
+  std::size_t total = 0;
+  std::size_t e1 = 0;
+  for (auto f : fs) {
+    if (static_cast<std::size_t>(e) == e1++)
+      break;
+    total += f;
+  }
+  return total;
+}
 }
 
 template <typename E, std::size_t... fields> struct basic_register {
@@ -39,10 +52,11 @@ template <typename E, std::size_t... fields> struct basic_register {
   using value_type = detail::unit_t<size>;
   using type =
       std::conditional_t<!std::is_pointer<E>::value, volatile value_type,
-                         volatile value_type *const volatile>;
+                         volatile value_type *const>;
 
   static_assert(std::is_enum<field_accessor_type>::value,
                 "Field accessors must be enumerated type");
+  static_assert(size <= 64, "Size of register exceeds 64 bits");
   static_assert(detail::power_of_two(size),
                 "Total register size not a power of two");
   static_assert(
@@ -52,7 +66,23 @@ template <typename E, std::size_t... fields> struct basic_register {
 
   type r;
 
-  template <typename T> basic_register(T r) : r(reinterpret_cast<type>(r)) {}
+  template <typename T>
+  constexpr basic_register(
+      T r,
+      std::enable_if_t<!std::is_void<T>::value && std::is_pointer<E>::value> * =
+          nullptr)
+      : r(reinterpret_cast<type>(r)) {}
+
+  template <typename T>
+  basic_register(T r, std::enable_if_t<!std::is_void<T>::value &&
+                                       !std::is_pointer<E>::value> * = nullptr)
+      : r(r) {}
+
+  template <field_accessor_type e> void set(value_type v) {
+    constexpr auto sum =
+        detail::sum(e, std::integer_sequence<std::size_t, 0, fields...>{});
+    static_assert(sum < size, "Field bit offset exceeds limits");
+  }
 };
 }
 
