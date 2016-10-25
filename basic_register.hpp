@@ -49,6 +49,15 @@ constexpr std::size_t mask(E e, std::integer_sequence<std::size_t, fields...>) {
   constexpr std::size_t width[] = {fields...};
   return (1 << width[static_cast<std::size_t>(e)]) - 1;
 }
+
+template <typename T, typename... Ts> struct is_field {
+  constexpr static bool value = is_field<T>::value && is_field<Ts...>::value;
+};
+
+template <typename T> struct is_field<T> {
+  constexpr static bool value =
+      std::is_integral<T>::value || std::is_enum<T>::value;
+};
 }
 
 template <typename E, std::size_t... fields> struct basic_register {
@@ -178,6 +187,8 @@ struct basic_typed_register {
   struct typed_register : public R<E, fields...> {
     static_assert(sizeof...(fields) == sizeof...(Ts),
                   "Field types do not agree with number of fields");
+    static_assert(detail::is_field<Ts...>::value,
+                  "Field types are not integral or enumerations");
 
     template <typename T> typed_register(T t) : R<E, fields...>{t} {}
   };
