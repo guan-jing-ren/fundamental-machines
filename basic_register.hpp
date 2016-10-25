@@ -80,8 +80,9 @@ template <typename E, std::size_t... fields> struct basic_register {
       : r(reinterpret_cast<type>(r)) {}
 
   template <typename T>
-  basic_register(T r, std::enable_if_t<!std::is_void<T>::value &&
-                                       !std::is_pointer<E>::value> * = nullptr)
+  constexpr basic_register(
+      T r, std::enable_if_t<!std::is_void<T>::value &&
+                            !std::is_pointer<E>::value> * = nullptr)
       : r(r) {}
 
   template <field_accessor_type e>
@@ -168,6 +169,18 @@ template <typename E, std::size_t... fields> struct basic_register {
                           bool> {
     return test<e>(r, v);
   }
+};
+
+template <template <typename E, std::size_t... fields> typename R,
+          typename... Ts>
+struct basic_typed_register {
+  template <typename E, std::size_t... fields>
+  struct typed_register : public R<E, fields...> {
+    static_assert(sizeof...(fields) == sizeof...(Ts),
+                  "Field types do not agree with number of fields");
+
+    template <typename T> typed_register(T t) : R<E, fields...>{t} {}
+  };
 };
 
 template <typename E, std::size_t... fields>

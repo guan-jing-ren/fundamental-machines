@@ -35,5 +35,15 @@ int main() {
   if (!reg2.test<RegField::THIRD>(0b1101))
     throw fm::test_error{"Field test failed"};
 
+  r = 0;
+  fm::basic_typed_register<fm::hardware_register, int, int, int, int,
+                           int>::typed_register<RegField, 2, 5, 4, 7, 32 - 18>
+      reg3 = 0;
+  (void)reg3;
+  fm::basic_typed_register<fm::memory_mapped_register, int, int, int, int,
+                           int>::typed_register<RegField, 2, 5, 4, 7, 32 - 18>
+      reg4 = &r;
+  (void)reg4;
+
   return 0;
 }
