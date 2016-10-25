@@ -44,11 +44,10 @@ constexpr std::size_t sum(E e, std::integer_sequence<std::size_t, fields...>) {
   return total;
 }
 
-template <std::size_t... fields> constexpr std::size_t width[] = {fields...};
-
 template <typename E, std::size_t... fields>
 constexpr std::size_t mask(E e, std::integer_sequence<std::size_t, fields...>) {
-  return (1 << width<fields...>[static_cast<std::size_t>(e)]) - 1;
+  constexpr std::size_t width[] = {fields...};
+  return (1 << width[static_cast<std::size_t>(e)]) - 1;
 }
 }
 
