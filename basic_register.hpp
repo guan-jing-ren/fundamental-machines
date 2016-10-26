@@ -202,19 +202,22 @@ struct basic_typed_register {
     template <E e>
     typename detail::nth_type<static_cast<std::size_t>(e), Ts...>::type
     get() volatile {
-      return R<E, fields...>::template get<e>();
+      return static_cast<
+          typename detail::nth_type<static_cast<std::size_t>(e), Ts...>::type>(
+          R<E, fields...>::template get<e>());
     }
 
     template <E e>
     void set(typename detail::nth_type<static_cast<std::size_t>(e), Ts...>::type
                  t) volatile {
-      R<E, fields...>::template set<e>(t);
+      R<E, fields...>::template set<e>(
+          static_cast<typename R<E, fields...>::value_type>(t));
     }
 
     template <E e>
     bool test(typename detail::nth_type<static_cast<std::size_t>(e),
                                         Ts...>::type t) volatile {
-      return R<E, fields...>::template test<e>(t);
+      return R<E, fields...>::template test<e>(static_cast<typename R<E, fields...>::value_type>(t));
     }
   };
 };
