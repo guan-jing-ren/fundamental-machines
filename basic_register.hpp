@@ -58,6 +58,14 @@ template <typename T> struct is_field<T> {
   constexpr static bool value =
       std::is_integral<T>::value || std::is_enum<T>::value;
 };
+
+template <std::size_t N, typename T, typename... Ts> struct nth_type {
+  using type = typename nth_type<N - 1, Ts...>::type;
+};
+
+template <typename T, typename... Ts> struct nth_type<0, T, Ts...> {
+  using type = T;
+};
 }
 
 template <typename E, std::size_t... fields> struct basic_register {
@@ -180,8 +188,7 @@ template <typename E, std::size_t... fields> struct basic_register {
   }
 };
 
-template <template <typename E, std::size_t... fields> typename R,
-          typename... Ts>
+template <template <typename, std::size_t...> typename R, typename... Ts>
 struct basic_typed_register {
   template <typename E, std::size_t... fields>
   struct typed_register : public R<E, fields...> {
@@ -191,6 +198,24 @@ struct basic_typed_register {
                   "Field types are not integral or enumerations");
 
     template <typename T> typed_register(T t) : R<E, fields...>{t} {}
+
+    template <E e>
+    typename detail::nth_type<static_cast<std::size_t>(e), Ts...>::type
+    get() volatile {
+      return R<E, fields...>::template get<e>();
+    }
+
+    template <E e>
+    void set(typename detail::nth_type<static_cast<std::size_t>(e), Ts...>::type
+                 t) volatile {
+      R<E, fields...>::template set<e>(t);
+    }
+
+    template <E e>
+    bool test(typename detail::nth_type<static_cast<std::size_t>(e),
+                                        Ts...>::type t) volatile {
+      return R<E, fields...>::template test<e>(t);
+    }
   };
 };
 
