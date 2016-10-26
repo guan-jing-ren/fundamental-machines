@@ -50,7 +50,7 @@ int main() {
 
   if (r != 0b00000000000111000000000001111100)
     throw fm::test_error{"Memory mapped register test failed"};
-  if (reg3.r != 0b00000000000111000000000000011100)
+  if (reg3.r != 0b00000000000111000000000000011000)
     throw fm::test_error{"Value register test failed"};
   if (reg4.get<RegField::SECOND>() != 0b11111)
     throw fm::test_error{"Field retrieval incorrect value"};
@@ -58,7 +58,7 @@ int main() {
     throw fm::test_error{"Field retrieval incorrect value"};
   if (reg3.get<RegField::SECOND>() != RegField::SEVENTH)
     throw fm::test_error{"Field retrieval incorrect value"};
-  if (reg3.test<RegField::SECOND>(RegField::SEVENTH))
+  if (!reg3.test<RegField::SECOND>(RegField::SEVENTH))
     throw fm::test_error{"Field retrieval incorrect value"};
   if (reg3.get<RegField::FIFTH>() != 0b111)
     throw fm::test_error{"Field retrieval incorrect value"};
