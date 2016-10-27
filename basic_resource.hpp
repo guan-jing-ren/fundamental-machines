@@ -6,7 +6,7 @@
 namespace fm {
 
 // Resource types are configured by resource traits that specify default values
-// as defined by the C API. They also specify the C API equivalents for factory
+// as defined by its C API. They also specify the C API equivalents for factory
 // and cleanup functions. In general, C factories tend to return a value of
 // fundamental type and the cleanup functions take that value as its sole
 // argument. For C APIs that break this general pattern, this will be handled by
@@ -19,7 +19,7 @@ template <typename T> struct resource_traits {};
 template <> struct resource_traits<int> { constexpr static int initial = -1; };
 
 // Resources that are opaque objects tend to be pointers. All pointer types
-// basically has nullptr has the null resource.
+// basically has nullptr as the null resource.
 template <typename T> struct resource_traits<T *> {
   constexpr static T *initial = nullptr;
 };
