@@ -93,7 +93,7 @@ template <typename E, std::size_t... fields> struct basic_register {
       T r,
       std::enable_if_t<!std::is_void<T>::value && std::is_pointer<E>::value> * =
           nullptr)
-      : r(*new (reinterpret_cast<void*>(r)) value_type) {}
+      : r(*new (reinterpret_cast<void *>(r)) value_type) {}
 
   template <typename T>
   constexpr basic_register(
@@ -101,7 +101,13 @@ template <typename E, std::size_t... fields> struct basic_register {
                             !std::is_pointer<E>::value> * = nullptr)
       : r(r) {}
 
-  template <field_accessor_type e> auto set(value_type v) volatile {
+  template <field_accessor_type e, field_accessor_type... es, typename F,
+            typename... Fs>
+  auto calc(F f, Fs... fs) volatile {
+    return calc<e>(f) | calc<es...>(fs...);
+  }
+
+  template <field_accessor_type e, typename F> auto calc(F f) volatile {
     static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
                   "Field accessor does not address field");
     constexpr auto offset =
@@ -110,7 +116,12 @@ template <typename E, std::size_t... fields> struct basic_register {
     constexpr auto m =
         detail::mask(e, std::integer_sequence<std::size_t, fields...>{});
     static_assert(detail::power_of_two(m + 1), "Mask is not all 1's");
-    r |= ((v & m) << offset);
+    return ((f & m) << offset);
+  }
+
+  template <field_accessor_type... e, typename... Fs>
+  auto set(Fs... v) volatile {
+    r |= calc<e...>(v...);
   }
 
   template <field_accessor_type e> auto get() volatile {
