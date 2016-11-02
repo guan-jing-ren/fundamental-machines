@@ -73,9 +73,8 @@ template <typename E, std::size_t... fields> struct basic_register {
       detail::register_size(std::integer_sequence<std::size_t, fields...>{});
   using field_accessor_type = std::remove_pointer_t<E>;
   using value_type = detail::unit_t<size>;
-  using type =
-      std::conditional_t<!std::is_pointer<E>::value, volatile value_type,
-                         volatile value_type *const>;
+  using type = std::conditional_t<!std::is_pointer<E>::value,
+                                  volatile value_type, volatile value_type &>;
 
   static_assert(std::is_enum<field_accessor_type>::value,
                 "Field accessors must be enumerated type");
@@ -94,7 +93,7 @@ template <typename E, std::size_t... fields> struct basic_register {
       T r,
       std::enable_if_t<!std::is_void<T>::value && std::is_pointer<E>::value> * =
           nullptr)
-      : r(reinterpret_cast<type>(r)) {}
+      : r(*new (r) value_type) {}
 
   template <typename T>
   constexpr basic_register(
@@ -102,8 +101,7 @@ template <typename E, std::size_t... fields> struct basic_register {
                             !std::is_pointer<E>::value> * = nullptr)
       : r(r) {}
 
-  template <field_accessor_type e>
-  static void set(volatile value_type &r, value_type v) {
+  template <field_accessor_type e> auto set(value_type v) volatile {
     static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
                   "Field accessor does not address field");
     constexpr auto offset =
@@ -115,22 +113,7 @@ template <typename E, std::size_t... fields> struct basic_register {
     r |= ((v & m) << offset);
   }
 
-  template <field_accessor_type e>
-  auto set(value_type v) volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                          std::is_pointer<E>::value> {
-    set<e>(*r, v);
-  }
-
-  template <field_accessor_type e>
-  auto set(value_type v) volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                          !std::is_pointer<E>::value> {
-    set<e>(r, v);
-  }
-
-  template <field_accessor_type e>
-  static value_type get(volatile value_type &r) {
+  template <field_accessor_type e> auto get() volatile {
     static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
                   "Field accessor does not address field");
     constexpr auto offset =
@@ -142,24 +125,7 @@ template <typename E, std::size_t... fields> struct basic_register {
     return (r >> offset) & m;
   }
 
-  template <field_accessor_type e>
-  auto get() volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                              std::is_pointer<E>::value,
-                          value_type> {
-    return get<e>(*r);
-  }
-
-  template <field_accessor_type e>
-  auto get() volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                              !std::is_pointer<E>::value,
-                          value_type> {
-    return get<e>(r);
-  }
-
-  template <field_accessor_type e>
-  static bool test(volatile value_type r, value_type v) {
+  template <field_accessor_type e> auto test(value_type v) volatile {
     static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
                   "Field accessor does not address field");
     constexpr auto offset =
@@ -169,22 +135,6 @@ template <typename E, std::size_t... fields> struct basic_register {
         detail::mask(e, std::integer_sequence<std::size_t, fields...>{});
     static_assert(detail::power_of_two(m + 1), "Mask is not all 1's");
     return ((r >> offset) & m) == v;
-  }
-
-  template <field_accessor_type e>
-  auto test(value_type v) volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                              std::is_pointer<E>::value,
-                          bool> {
-    return test<e>(*r, v);
-  }
-
-  template <field_accessor_type e>
-  auto test(value_type v) volatile
-      -> std::enable_if_t<static_cast<std::size_t>(e) < sizeof...(fields) &&
-                              !std::is_pointer<E>::value,
-                          bool> {
-    return test<e>(r, v);
   }
 };
 
@@ -217,7 +167,8 @@ struct basic_typed_register {
     template <E e>
     bool test(typename detail::nth_type<static_cast<std::size_t>(e),
                                         Ts...>::type t) volatile {
-      return R<E, fields...>::template test<e>(static_cast<typename R<E, fields...>::value_type>(t));
+      return R<E, fields...>::template test<e>(
+          static_cast<typename R<E, fields...>::value_type>(t));
     }
   };
 };
