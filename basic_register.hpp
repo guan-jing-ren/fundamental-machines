@@ -93,7 +93,7 @@ template <typename E, std::size_t... fields> struct basic_register {
       T r,
       std::enable_if_t<!std::is_void<T>::value && std::is_pointer<E>::value> * =
           nullptr)
-      : r(*new (r) value_type) {}
+      : r(*new (reinterpret_cast<void*>(r)) value_type) {}
 
   template <typename T>
   constexpr basic_register(
