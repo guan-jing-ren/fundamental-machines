@@ -4,6 +4,9 @@
 #include "basic_resource.hpp"
 
 namespace fm {
+
+// The provided resource_trait for FILE* objects, using the basic fopen and
+// fclose API.
 struct FileTraits : public fm::resource_traits<std::FILE *> {
   static std::FILE *constructor(const char *name, const char *mode) {
     return std::fopen(name, mode);
@@ -16,17 +19,26 @@ using file_resource = basic_resource<std::FILE *, FileTraits>;
 }
 
 namespace std {
+// To avoid confusion with the regular C types, put it in a new namespace for
+// specifically C updates.
 namespace C {
+
+// For FILE* C API functions that either return a FILE* or void, return a
+// reference to itself. The 'f' prefix is omitted for all API wrappers. As much
+// as possible, use overloading to replace teh C APIs that do the same thing for
+// different types.
 struct FILE : public fm::file_resource {
   using fm::file_resource::file_resource;
 
+  // freopen can handle a nullptr name, so this wrapper provides the explicit
+  // option to omit it.
   FILE &reopen(const char *mode) {
-    t = std::freopen(nullptr, mode, *this);
+    std::freopen(nullptr, mode, *this);
     return *this;
   }
 
   FILE &reopen(const char *name, const char *mode) {
-    t = std::freopen(name, mode, *this);
+    std::freopen(name, mode, *this);
     return *this;
   }
 
@@ -68,6 +80,10 @@ struct FILE : public fm::file_resource {
     return *this;
   }
 
+  // The standard actually mandates the contents of the buffer is trivially
+  // copyable. So this FILE* wrapper takes this chance to statically assert this
+  // requirement through type deduction rather than take a void* like in the C
+  // API.
   template <typename T> auto read(T *buffer, std::size_t count) {
     static_assert(std::is_trivially_copyable<T>::value,
                   "Buffer type is not trivially copyable");
@@ -158,6 +174,9 @@ struct FILE : public fm::file_resource {
     return FILE::steal(f);
   }
 
+  // The formatted input/output functions retain the use of variadic arguments
+  // for simplicity. May include in the future versions which solely use type
+  // deduction on variadic templates in lieu of format strings.
   template <typename... T> auto scan(const char *format, T *... t) {
     return std::fscanf(*this, format, t...);
   }
