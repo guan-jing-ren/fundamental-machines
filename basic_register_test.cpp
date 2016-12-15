@@ -8,11 +8,9 @@ enum class RegField { FIRST, SECOND, THIRD, FOURTH, FIFTH, SIXTH, SEVENTH };
 fm::detail::unit_t<32> r = 0;
 int main() {
   fm::memory_mapped_register<RegField, 2, 5, 4, 7, 32 - 18> reg = &r;
-  reg.set<RegField::SECOND>(63);
-  reg.set<RegField::FIFTH>(7);
+  reg.set<RegField::SECOND, RegField::FIFTH>(63, 7);
   fm::hardware_register<RegField, 2, 5, 4, 7, 32 - 18> reg2 = 0;
-  reg2.set<RegField::SECOND>(63);
-  reg2.set<RegField::FIFTH>(7);
+  reg2.set<RegField::SECOND, RegField::FIFTH>(63, 7);
 
   if (r != 0b00000000000111000000000001111100)
     throw fm::test_error{"Memory mapped register test failed"};
