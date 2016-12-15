@@ -25,6 +25,9 @@ constexpr auto power_of_two(std::size_t s) {
 }
 
 template <std::size_t N> struct unit { using type = void; };
+template <> struct unit<1> { using type = std::uint8_t; };
+template <> struct unit<2> { using type = std::uint8_t; };
+template <> struct unit<4> { using type = std::uint8_t; };
 template <> struct unit<8> { using type = std::uint8_t; };
 template <> struct unit<16> { using type = std::uint16_t; };
 template <> struct unit<32> { using type = std::uint32_t; };
