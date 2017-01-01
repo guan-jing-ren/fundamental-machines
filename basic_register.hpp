@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <limits>
 #include <cstdint>
+#include <climits>
 #include <utility>
 
 namespace fm {
@@ -17,7 +18,8 @@ constexpr auto register_size(std::integer_sequence<std::size_t, fields...>) {
 }
 
 constexpr auto power_of_two(std::size_t s) {
-  if (s == 1)
+  if (s <= 1) // Covers s == 0 case, while technically correct, is most likley
+              // the result of an overflow before this function is called with 0
     return true;
   if (s % 2 == 1)
     return false;
@@ -50,6 +52,8 @@ constexpr std::size_t sum(E e, std::integer_sequence<std::size_t, fields...>) {
 template <typename E, std::size_t... fields>
 constexpr std::size_t mask(E e, std::integer_sequence<std::size_t, fields...>) {
   constexpr std::size_t width[] = {fields...};
+  if (width[static_cast<std::size_t>(e)] >= sizeof(std::size_t) * CHAR_BIT)
+    return -1;
   return (1 << width[static_cast<std::size_t>(e)]) - 1;
 }
 
