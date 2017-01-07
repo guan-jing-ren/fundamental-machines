@@ -126,9 +126,28 @@ template <typename E, std::size_t... fields> struct basic_register {
     return ((f & m) << offset);
   }
 
+  template <field_accessor_type e, field_accessor_type... es, typename F,
+            typename... Fs>
+  static constexpr auto calc_mask(F f, Fs... fs) {
+    return calc_mask<e>(f) | calc_mask<es...>(fs...);
+  }
+
+  template <field_accessor_type e, typename F>
+  static constexpr auto calc_mask(F f) {
+    static_assert(static_cast<std::size_t>(e) < sizeof...(fields),
+                  "Field accessor does not address field");
+    constexpr auto offset =
+        detail::sum(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(offset < size, "Field bit offset exceeds limits");
+    constexpr auto m =
+        detail::mask(e, std::integer_sequence<std::size_t, fields...>{});
+    static_assert(detail::power_of_two(m + 1), "Mask is not all 1's");
+    return m << offset;
+  }
+
   template <field_accessor_type... e, typename... Fs>
   auto set(Fs... v) volatile {
-    r |= calc<e...>(v...);
+    r = calc<e...>(v...) | (~calc_mask<e...>(v...) & r);
   }
 
   template <field_accessor_type e> auto get() volatile {
