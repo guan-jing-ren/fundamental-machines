@@ -167,6 +167,19 @@ template <typename T> constexpr T *crotate(T *first, T *mid, T *last) {
   return new_mid;
 }
 
+template <typename T> constexpr T *cunique(T *first, T *last) {
+  auto next = first + 1;
+  while (next != last) {
+    while (next != last && *next == *first)
+      ++next;
+    if (next != last)
+      cswap(++first, next++);
+  }
+  if (first != last)
+    ++first;
+  return first;
+}
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
   constexpr auto s = hello + world;
@@ -201,6 +214,9 @@ int main() {
   cout << '\n';
   auto mid = cunique(unsorted, unsorted + extent<decltype(unsorted)>{});
   copy(unsorted, mid, ostream_iterator<size_t>(cout, ","));
+  cout << '\n';
+  copy(unsorted, unsorted + extent<decltype(unsorted)>{},
+       ostream_iterator<size_t>(cout, ","));
   cout << '\n';
 
   size_t same[] = {5, 5, 5};
