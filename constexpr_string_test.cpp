@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <tuple>
 
 using namespace std;
@@ -112,7 +113,58 @@ constexpr auto operator+(const char (&s)[N], cexprstr<M> other) {
 }
 
 template <size_t N> ostream &operator<<(ostream &out, cexprstr<N> s) {
-  return out << setw(N) << s.s << setw(0);
+  for (auto c : s.s)
+    out << c;
+  return out;
+}
+
+template <typename T> constexpr void cswap(T *l, T *r) {
+  if (l == r)
+    return;
+  const size_t temp = *l;
+  *l = *r;
+  *r = temp;
+}
+
+template <typename T> constexpr T *cpartition(T *first, T *last) {
+  if (first == last)
+    return first;
+  const auto midval = *(first + (last - first - 1) / 2);
+
+  while (first != last) {
+    while (first != last && (*first < midval))
+      ++first;
+    while (first != last && (midval < *(last - 1)))
+      --last;
+    if (first == last)
+      break;
+    cswap(first, last - 1);
+    if (++first != last)
+      --last;
+  }
+
+  return first;
+}
+
+template <typename T> constexpr void csort(T *first, T *last) {
+  if (last - first < 2)
+    return;
+
+  auto midpoint = cpartition(first, last);
+  csort(first, midpoint);
+  csort(midpoint, last);
+}
+
+template <typename T> constexpr T *crotate(T *first, T *mid, T *last) {
+  auto new_mid = last - (mid - first);
+  while (first != mid && mid != last) {
+    auto next = mid;
+    while (first != mid && next != last)
+      cswap(first++, next++);
+    if (first == mid)
+      mid = next;
+  }
+  return new_mid;
 }
 
 int main() {
@@ -141,6 +193,30 @@ int main() {
   static_assert(hello < hello + "world", "hello not less than helloworld");
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
+
+  size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
+  csort(unsorted, unsorted + extent<decltype(unsorted)>{});
+  for (auto s : unsorted)
+    cout << s << ' ';
+  cout << '\n';
+  auto mid = cunique(unsorted, unsorted + extent<decltype(unsorted)>{});
+  copy(unsorted, mid, ostream_iterator<size_t>(cout, ","));
+  cout << '\n';
+
+  size_t same[] = {5, 5, 5};
+  csort(same, same + extent<decltype(same)>{});
+  for (auto s : same)
+    cout << s << ' ';
+  cout << '\n';
+
+  for (auto i = 0, end = 11; i < end; ++i) {
+    size_t unrotated[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+    auto mid = crotate(unrotated, unrotated + i, unrotated + end);
+    cout << "Mid: " << i << ", new point: " << (mid - unrotated) << " -> ";
+    for (auto r : unrotated)
+      cout << r << ' ';
+    cout << '\n';
+  }
 
   return 0;
 }
