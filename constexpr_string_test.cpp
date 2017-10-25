@@ -13,28 +13,24 @@ constexpr size_t cstrlen(const char *s) {
   return l;
 }
 
-constexpr char *ccopy_n(const char *src, size_t len, char *dst) {
+template <typename T> constexpr T *ccopy_n(const T *src, size_t len, T *dst) {
   while (len-- > 0)
     *(dst++) = *(src++);
   return dst;
 }
 
-template <size_t N> struct cexprstr {
-  char s[N] = {};
+template <typename T, size_t N> struct cexprstr {
+  T s[N] = {};
   constexpr cexprstr() = default;
-  template <size_t M> constexpr cexprstr(const char (&s)[M]) {
+  template <size_t M> constexpr cexprstr(const T (&s)[M]) {
     ccopy_n(s, N, this->s);
   }
   constexpr size_t size() const { return N; }
-  constexpr const char &operator[](size_t i) const { return s[i]; }
+  constexpr const T &operator[](size_t i) const { return s[i]; }
   operator string() { return string{s, s + N}; }
 };
 
-template <size_t N> cexprstr(const char (&s)[N])->cexprstr<N - 1>;
-template <char... C> constexpr cexprstr<sizeof...(C)> operator""_css() {
-  char s[] = {C...};
-  return cexprstr<sizeof...(C)>{s};
-}
+template <typename T, size_t N> cexprstr(const T (&s)[N])->cexprstr<T, N - 1>;
 
 template <typename... S> constexpr common_type_t<S...> sum(S... s) {
   common_type_t<S...> ss = 0;
@@ -43,37 +39,39 @@ template <typename... S> constexpr common_type_t<S...> sum(S... s) {
   return ss;
 }
 
-template <size_t... N> constexpr auto concat(cexprstr<N>... s) {
-  cexprstr<sum(N...)> str;
+template <typename T, size_t... N> constexpr auto concat(cexprstr<T, N>... s) {
+  cexprstr<T, sum(N...)> str;
   auto first = str.s;
   for (auto cs : {make_pair(s.s, s.size())...})
     first = ccopy_n(cs.first, cs.second, first);
   return str;
 }
 
-template <size_t N, size_t M>
-constexpr bool operator==(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator==(cexprstr<T, N> l, cexprstr<T, M> r) {
   return false;
 }
 
-template <size_t N, size_t M>
-constexpr bool operator!=(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator!=(cexprstr<T, N> l, cexprstr<T, M> r) {
   return true;
 }
 
-template <size_t N> constexpr bool operator==(cexprstr<N> l, cexprstr<N> r) {
+template <typename T, size_t N>
+constexpr bool operator==(cexprstr<T, N> l, cexprstr<T, N> r) {
   for (size_t i = 0; i < N; ++i)
     if (l[i] != r[i])
       return false;
   return true;
 }
 
-template <size_t N> constexpr bool operator!=(cexprstr<N> l, cexprstr<N> r) {
+template <typename T, size_t N>
+constexpr bool operator!=(cexprstr<T, N> l, cexprstr<T, N> r) {
   return !(l == r);
 }
 
-template <size_t N, size_t M>
-constexpr bool operator<(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator<(cexprstr<T, N> l, cexprstr<T, M> r) {
   for (size_t i = 0; i < min(N, M); ++i)
     if (l[i] < r[i])
       return true;
@@ -82,37 +80,38 @@ constexpr bool operator<(cexprstr<N> l, cexprstr<M> r) {
   return N < M;
 }
 
-template <size_t N, size_t M>
-constexpr bool operator>(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator>(cexprstr<T, N> l, cexprstr<T, M> r) {
   return r < l;
 }
 
-template <size_t N, size_t M>
-constexpr bool operator<=(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator<=(cexprstr<T, N> l, cexprstr<T, M> r) {
   return !(l > r);
 }
 
-template <size_t N, size_t M>
-constexpr bool operator>=(cexprstr<N> l, cexprstr<M> r) {
+template <typename T, size_t N, size_t M>
+constexpr bool operator>=(cexprstr<T, N> l, cexprstr<T, M> r) {
   return !(l < r);
 }
 
-template <size_t N, size_t M>
-constexpr auto operator+(cexprstr<N> self, cexprstr<M> other) {
+template <typename T, size_t N, size_t M>
+constexpr auto operator+(cexprstr<T, N> self, cexprstr<T, M> other) {
   return concat(self, other);
 }
 
-template <size_t N, size_t M>
-constexpr auto operator+(cexprstr<N> self, const char (&s)[M]) {
+template <typename T, size_t N, size_t M>
+constexpr auto operator+(cexprstr<T, N> self, const T (&s)[M]) {
   return concat(self, cexprstr{s});
 }
 
-template <size_t N, size_t M>
-constexpr auto operator+(const char (&s)[N], cexprstr<M> other) {
+template <typename T, size_t N, size_t M>
+constexpr auto operator+(const T (&s)[N], cexprstr<T, M> other) {
   return concat(cexprstr{s}, other);
 }
 
-template <size_t N> ostream &operator<<(ostream &out, cexprstr<N> s) {
+template <typename T, size_t N>
+ostream &operator<<(ostream &out, cexprstr<T, N> s) {
   for (auto c : s.s)
     out << c;
   return out;
@@ -187,7 +186,7 @@ int main() {
   constexpr auto s = hello + world;
   cout << integral_constant<size_t, s.size()>::value << '\n';
   cout << s << '\n';
-  constexpr auto ss = concat(hello, 0_css, world, world, hello);
+  constexpr auto ss = concat(hello, world, world, hello);
   constexpr auto sss =
       "!" + hello + " " + world + " " + world + " " + hello + "!";
   cout << integral_constant<size_t, ss.size()>::value << ':' << ss << '\n';
