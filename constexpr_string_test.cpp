@@ -187,6 +187,15 @@ template <typename... T> constexpr size_t num_unique(T... t) {
   return cunique(size_order, size_order + sizeof...(T)) - size_order;
 }
 
+template <size_t N, typename... T> constexpr auto all_unique(T... t) {
+  cexprstr<common_type_t<T...>, N> arr;
+  common_type_t<T...> size_order[] = {t...};
+  csort(size_order, size_order + sizeof...(T));
+  cunique(size_order, size_order + sizeof...(T));
+  ccopy_n(size_order, N, arr.s);
+  return arr;
+}
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
   constexpr auto s = hello + world;
@@ -228,6 +237,10 @@ int main() {
   cout << "Num PI unique: "
        << integral_constant<size_t, num_unique(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5,
                                                8, 9, 7, 9)>::value
+       << '\n';
+  cout << "All PI unique: "
+       << all_unique<num_unique(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9)>(
+              3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9)
        << '\n';
 
   size_t same[] = {5, 5, 5};
