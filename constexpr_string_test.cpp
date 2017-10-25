@@ -168,7 +168,9 @@ template <typename T> constexpr T *crotate(T *first, T *mid, T *last) {
 }
 
 template <typename T> constexpr T *cunique(T *first, T *last) {
-  auto next = first + 1;
+  auto next = first;
+  if (next != last)
+    ++next;
   while (next != last) {
     while (next != last && *next == *first)
       ++next;
