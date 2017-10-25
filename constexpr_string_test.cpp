@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iterator>
 #include <tuple>
+#include <typeinfo>
 
 using namespace std;
 
@@ -196,8 +197,26 @@ template <size_t N, typename... T> constexpr auto all_unique(T... t) {
   return arr;
 }
 
+template <size_t... I, typename T, size_t... N>
+constexpr void csorted(index_sequence<I...>, cexprstr<T, N>... s) {
+  constexpr auto all = all_unique<num_unique(N...)>(N...);
+  cout << "Num unique: " << all.size() << '\n';
+  tuple<cexprstr<T, all.s[I]>...> tup;
+  cout << typeid(tup).name() << '\n';
+}
+
+template <typename T, size_t... N> constexpr void csorted(cexprstr<T, N>... s) {
+  csorted(make_index_sequence<num_unique(N...)>{}, s...);
+}
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
+  constexpr cexprstr one = "one";
+  constexpr cexprstr eleven = "eleven";
+  constexpr cexprstr twenty_one = "twenty one";
+  constexpr cexprstr thirty_one = "thirty one";
+  constexpr cexprstr forty_one = "forty one";
+  constexpr cexprstr hundred_and_one = "hundred and one";
   constexpr auto s = hello + world;
   cout << integral_constant<size_t, s.size()>::value << '\n';
   cout << s << '\n';
@@ -223,6 +242,8 @@ int main() {
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
+  csorted(hello, world, one, eleven, twenty_one, thirty_one, forty_one,
+          hundred_and_one);
   size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
   csort(unsorted, unsorted + extent<decltype(unsorted)>{});
   for (auto s : unsorted)
