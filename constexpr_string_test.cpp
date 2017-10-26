@@ -201,6 +201,22 @@ template <typename T, typename... U> constexpr size_t count(T t, U... u) {
   return sum((t == u ? 1 : 0)...);
 }
 
+template <typename... T> struct Tuple : T... {
+  constexpr Tuple() = default;
+  constexpr Tuple(T... t) : T(t)... {}
+  template <typename U> constexpr U &get() { return *this; };
+  template <typename U> const U &get() const {
+    return static_cast<const U &>(*this);
+  };
+};
+
+template <typename... T>
+ostream &operator<<(ostream &out, const Tuple<T...> &t) {
+  auto v = {(out << t.template get<T>() << '\n', 0)...};
+  (void)v;
+  return out;
+}
+
 template <size_t... I, typename T, size_t... N>
 constexpr void csorted(index_sequence<I...>, cexprstr<T, N>... s) {
   constexpr auto all = all_unique<num_unique(N...)>(N...);
