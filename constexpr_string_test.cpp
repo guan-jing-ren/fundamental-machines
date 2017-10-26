@@ -227,18 +227,15 @@ int main() {
   cout << integral_constant<size_t, sss.size()>::value << ':' << sss << '\n';
   cout << integral_constant<char, sss[3]>::value << '\n';
 
-  static_assert(hello == hello, "hello does not equate itself!");
-  static_assert(hello <= hello, "hello not less than or equal itself!");
-  static_assert(hello >= hello, "hello not greater than or equal itself!");
-  static_assert(hello != world, "hello equates with world!");
-  static_assert(hello < world, "hello not less than world!");
-  static_assert(hello <= world, "hello not less than or equal to world!");
-  static_assert(world > hello, "world not greater than hello!");
-  static_assert(world >= hello, "world not greater than or equal to hello!");
-
-  static_assert(concat(hello, world) == hello + world,
-                "concat not equal to sum!");
-  static_assert(hello < hello + "world", "hello not less than helloworld");
+  static_assert(hello == hello);
+  static_assert(hello <= hello);
+  static_assert(hello >= hello);
+  static_assert(hello != world);
+  static_assert(hello <= world);
+  static_assert(world > hello);
+  static_assert(world >= hello);
+  static_assert(concat(hello, world) == hello + world);
+  static_assert(hello < hello + "world");
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
