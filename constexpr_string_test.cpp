@@ -264,6 +264,32 @@ template <typename T, size_t... N> constexpr auto csorted(cexprstr<T, N>... s) {
   return csorted(make_index_sequence<num_unique(N...)>{}, s...);
 }
 
+template <typename T>
+constexpr const T *clower_bound(const T *first, const T *last, T t) {
+  if (first == last)
+    return last;
+  if (!(t < *first))
+    return first;
+  auto mid = first + (last - first - 1) / 2;
+  if (t < *mid) {
+    auto llower = clower_bound(first, mid, t);
+    if (mid == llower)
+      return mid;
+  }
+  return clower_bound(mid, last, t);
+}
+
+template <typename T>
+constexpr bool cbinary_search(const T *first, const T *last, T t) {
+  auto lower = clower_bound(first, last, t);
+  return lower != last && *lower == t;
+}
+
+template <typename T, size_t N>
+constexpr bool cbinary_search(T t, cexprstr<T, N> c) {
+  return cbinary_search(c.s, c.s + N, t);
+}
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
   constexpr cexprstr one = "one";
@@ -294,10 +320,6 @@ int main() {
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
-  constexpr auto sorted =
-      csorted(forty_one, hundred_and_one, world, hello, one, eleven, twenty_one,
-              thirty_one, hello + world);
-  cout << "Sorted:\n" << sorted << '\n';
   size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
   csort(unsorted, unsorted + extent<decltype(unsorted)>{});
   for (auto s : unsorted)
@@ -336,6 +358,15 @@ int main() {
       cout << r << ' ';
     cout << '\n';
   }
+
+  constexpr auto sorted =
+      csorted(forty_one, hundred_and_one, world, hello, one, eleven, twenty_one,
+              thirty_one, hello + world);
+  cout << "Sorted:\n" << sorted << '\n';
+  static_assert(cbinary_search(forty_one, sorted));
+  static_assert(cbinary_search(hundred_and_one, sorted));
+  static_assert(cbinary_search(cexprstr{"one"}, sorted));
+  static_assert(!cbinary_search(cexprstr{"two"}, sorted));
 
   return 0;
 }
