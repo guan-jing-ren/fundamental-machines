@@ -2,7 +2,6 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <tuple>
 #include <typeinfo>
 
 using namespace std;
