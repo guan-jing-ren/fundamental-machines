@@ -205,15 +205,10 @@ template <typename T, typename... U> constexpr size_t count(T t, U... u) {
 template <typename... T> struct Tuple : T... {
   constexpr Tuple() = default;
   constexpr Tuple(T... t) : T(t)... {}
-  template <typename U> constexpr U &get() { return *this; };
-  template <typename U> const U &get() const {
-    return static_cast<const U &>(*this);
-  };
 };
 
-template <typename... T>
-ostream &operator<<(ostream &out, const Tuple<T...> &t) {
-  auto v = {(out << t.template get<T>() << '\n', 0)...};
+template <typename... T> ostream &operator<<(ostream &out, Tuple<T...> t) {
+  auto v = {(out << static_cast<T>(t) << '\n', 0)...};
   (void)v;
   return out;
 }
