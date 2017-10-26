@@ -27,7 +27,7 @@ template <typename T, size_t N> struct cexprstr {
     ccopy_n(s, N, this->s);
   }
 
-  constexpr size_t size() const { return N; }
+  constexpr static size_t size() { return N; }
   constexpr const T &operator[](size_t i) const { return s[i]; }
   operator string() { return string{s, s + N}; }
 };
