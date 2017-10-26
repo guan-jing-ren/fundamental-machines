@@ -268,7 +268,7 @@ constexpr const T *clower_bound(const T *first, const T *last, T t) {
   if (t < *mid) {
     auto llower = clower_bound(first, mid, t);
     if (mid == llower)
-      return mid;
+      return last;
   }
   return clower_bound(mid, last, t);
 }
