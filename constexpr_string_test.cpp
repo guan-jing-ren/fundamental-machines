@@ -26,6 +26,7 @@ template <typename T, size_t N> struct cexprstr {
   template <size_t M> constexpr cexprstr(const T (&s)[M]) {
     ccopy_n(s, N, this->s);
   }
+
   constexpr size_t size() const { return N; }
   constexpr const T &operator[](size_t i) const { return s[i]; }
   operator string() { return string{s, s + N}; }
@@ -215,6 +216,35 @@ ostream &operator<<(ostream &out, const Tuple<T...> &t) {
   auto v = {(out << t.template get<T>() << '\n', 0)...};
   (void)v;
   return out;
+}
+
+template <typename T, typename U, typename... V>
+constexpr auto bucket(U u, V... v) {
+  if constexpr (is_same<T, U>::value) {
+    U w[] = {u};
+    cexprstr<U, 1> c{w};
+    if constexpr (sizeof...(V) == 0) {
+      return c;
+    } else {
+      using B = decltype(bucket<T>(v...));
+      if constexpr (is_same<B, nullptr_t>::value)
+        return c;
+      else if constexpr (!is_same<typename B::value_type, T>::value)
+        return c;
+      else
+        return c + bucket<T>(v...);
+      ;
+    }
+  } else {
+    if constexpr (sizeof...(V) == 0)
+      return nullptr;
+    else
+      return bucket<T>(v...);
+  }
+}
+
+template <typename... T, typename... U> constexpr auto histogramify(U... u) {
+  return Tuple<T...>{bucket<typename T::value_type>(u...)...};
 }
 
 template <size_t... I, typename T, size_t... N>
