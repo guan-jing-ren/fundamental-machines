@@ -290,6 +290,11 @@ constexpr bool cbinary_search(T t, cexprstr<T, N> c) {
   return cbinary_search(c.s, c.s + N, t);
 }
 
+template <typename... T, size_t... N, typename U, size_t M>
+constexpr bool cbinary_search(Tuple<cexprstr<T, N>...> c, cexprstr<U, M> u) {
+  return cbinary_search(u, c);
+}
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
   constexpr cexprstr one = "one";
@@ -363,10 +368,10 @@ int main() {
       csorted(forty_one, hundred_and_one, world, hello, one, eleven, twenty_one,
               thirty_one, hello + world);
   cout << "Sorted:\n" << sorted << '\n';
-  static_assert(cbinary_search(forty_one, sorted));
-  static_assert(cbinary_search(hundred_and_one, sorted));
-  static_assert(cbinary_search(cexprstr{"one"}, sorted));
-  static_assert(!cbinary_search(cexprstr{"two"}, sorted));
+  static_assert(cbinary_search(sorted, forty_one));
+  static_assert(cbinary_search(sorted, hundred_and_one));
+  static_assert(cbinary_search(sorted, cexprstr{"one"}));
+  static_assert(!cbinary_search(sorted, cexprstr{"two"}));
 
   return 0;
 }
