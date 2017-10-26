@@ -248,15 +248,14 @@ template <typename... T, typename... U> constexpr auto histogramify(U... u) {
 }
 
 template <size_t... I, typename T, size_t... N>
-constexpr void csorted(index_sequence<I...>, cexprstr<T, N>... s) {
-  constexpr auto all = all_unique<num_unique(N...)>(N...);
-  cout << "Num unique: " << all.size() << '\n';
-  tuple<cexprstr<T, all.s[I]>...> tup;
-  cout << typeid(tup).name() << '\n';
+constexpr auto csorted(index_sequence<I...>, cexprstr<T, N>... s) {
+  constexpr auto all = all_unique<sizeof...(I)>(N...);
+  return histogramify<
+      cexprstr<cexprstr<T, all.s[I]>, count(all.s[I], N...)>...>(s...);
 }
 
-template <typename T, size_t... N> constexpr void csorted(cexprstr<T, N>... s) {
-  csorted(make_index_sequence<num_unique(N...)>{}, s...);
+template <typename T, size_t... N> constexpr auto csorted(cexprstr<T, N>... s) {
+  return csorted(make_index_sequence<num_unique(N...)>{}, s...);
 }
 
 int main() {
@@ -289,8 +288,9 @@ int main() {
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
-  csorted(hello, world, one, eleven, twenty_one, thirty_one, forty_one,
-          hundred_and_one);
+  constexpr auto sorted = csorted(forty_one, hundred_and_one, hello, world, one,
+                                  eleven, twenty_one, thirty_one);
+  cout << "Sorted:\n" << sorted << '\n';
   size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
   csort(unsorted, unsorted + extent<decltype(unsorted)>{});
   for (auto s : unsorted)
