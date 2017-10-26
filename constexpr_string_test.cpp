@@ -260,17 +260,16 @@ template <typename T, size_t... N> constexpr auto csorted(cexprstr<T, N>... s) {
 
 template <typename T>
 constexpr const T *clower_bound(const T *first, const T *last, T t) {
-  if (first == last)
-    return last;
-  if (!(t < *first))
-    return first;
-  auto mid = first + (last - first - 1) / 2;
-  if (t < *mid) {
-    auto llower = clower_bound(first, mid, t);
-    if (mid == llower)
-      return last;
+  while (first != last) {
+    if (!(t < *first))
+      return first;
+    auto mid = first + (last - first - 1) / 2;
+    if (t < *mid)
+      first = ++mid;
+    else
+      last = mid;
   }
-  return clower_bound(mid, last, t);
+  return first;
 }
 
 template <typename T>
@@ -364,7 +363,10 @@ int main() {
   cout << "Sorted:\n" << sorted << '\n';
   static_assert(cbinary_search(sorted, forty_one));
   static_assert(cbinary_search(sorted, hundred_and_one));
+  static_assert(!cbinary_search(sorted, cexprstr{"hundred and onf"}));
+  static_assert(cbinary_search(sorted, hello + world));
   static_assert(cbinary_search(sorted, cexprstr{"one"}));
+  static_assert(!cbinary_search(sorted, cexprstr{"aaa"}));
   static_assert(!cbinary_search(sorted, cexprstr{"two"}));
 
   return 0;
