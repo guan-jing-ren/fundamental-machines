@@ -122,7 +122,7 @@ ostream &operator<<(ostream &out, cexprstr<T, N> s) {
 template <typename T> constexpr void cswap(T *l, T *r) {
   if (l == r)
     return;
-  const size_t temp = *l;
+  const T temp = *l;
   *l = *r;
   *r = temp;
 }
@@ -243,8 +243,14 @@ constexpr auto bucket(U u, V... v) {
   }
 }
 
+template <typename T, typename... U> constexpr auto sorted_bucket(U... u) {
+  auto b = bucket<T>(u...);
+  csort(b.s, b.s + b.size());
+  return b;
+}
+
 template <typename... T, typename... U> constexpr auto histogramify(U... u) {
-  return Tuple<T...>{bucket<typename T::value_type>(u...)...};
+  return Tuple{sorted_bucket<typename T::value_type>(u...)...};
 }
 
 template <size_t... I, typename T, size_t... N>
@@ -288,8 +294,9 @@ int main() {
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
-  constexpr auto sorted = csorted(forty_one, hundred_and_one, hello, world, one,
-                                  eleven, twenty_one, thirty_one);
+  constexpr auto sorted =
+      csorted(forty_one, hundred_and_one, world, hello, one, eleven, twenty_one,
+              thirty_one, hello + world);
   cout << "Sorted:\n" << sorted << '\n';
   size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
   csort(unsorted, unsorted + extent<decltype(unsorted)>{});
