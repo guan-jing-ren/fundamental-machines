@@ -20,6 +20,7 @@ template <typename T> constexpr T *ccopy_n(const T *src, size_t len, T *dst) {
 }
 
 template <typename T, size_t N> struct cexprstr {
+  using value_type = T;
   T s[N] = {};
   constexpr cexprstr() = default;
   template <size_t M> constexpr cexprstr(const T (&s)[M]) {
