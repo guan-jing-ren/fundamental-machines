@@ -269,7 +269,7 @@ constexpr const T *clower_bound(const T *first, const T *last, T t) {
     else
       last = mid;
   }
-  return first;
+  return last;
 }
 
 template <typename T>
