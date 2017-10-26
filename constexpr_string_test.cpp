@@ -228,7 +228,6 @@ constexpr auto bucket(U u, V... v) {
         return c;
       else
         return c + bucket<T>(v...);
-      ;
     }
   } else {
     if constexpr (sizeof...(V) == 0)
