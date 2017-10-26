@@ -197,6 +197,10 @@ template <size_t N, typename... T> constexpr auto all_unique(T... t) {
   return arr;
 }
 
+template <typename T, typename... U> constexpr size_t count(T t, U... u) {
+  return sum((t == u ? 1 : 0)...);
+}
+
 template <size_t... I, typename T, size_t... N>
 constexpr void csorted(index_sequence<I...>, cexprstr<T, N>... s) {
   constexpr auto all = all_unique<num_unique(N...)>(N...);
@@ -259,6 +263,10 @@ int main() {
   cout << "All PI unique: "
        << all_unique<num_unique(3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9)>(
               3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9)
+       << '\n';
+  cout << "Number of 5s: "
+       << integral_constant<size_t, count(5, 3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8,
+                                          9, 7, 9)>::value
        << '\n';
 
   size_t same[] = {5, 5, 5};
