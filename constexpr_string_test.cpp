@@ -318,6 +318,27 @@ constexpr size_t index_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
   return count_to(t, group_of(t, c)) + ind;
 }
 
+template <typename T> struct Enum : T {
+  template <typename... U> constexpr Enum(U... u) : T(csorted(u...)) {}
+  template <size_t... N>
+  constexpr Enum(const char (&... s)[N]) : T(csorted(cexprstr{s}...)) {}
+
+  template <size_t N> constexpr size_t operator[](const char (&s)[N]) const {
+    return index_of(static_cast<T>(*this), cexprstr{s});
+  }
+
+  template <typename U, size_t N>
+  constexpr size_t operator[](cexprstr<U, N> s) const {
+    return index_of(static_cast<T>(*this), s);
+  }
+};
+
+template <typename T, size_t... U>
+Enum(cexprstr<T, U>... u)->Enum<decltype(csorted(u...))>;
+
+template <size_t... N>
+Enum(const char (&... s)[N])->Enum<decltype(csorted(cexprstr{s}...))>;
+
 int main() {
   constexpr cexprstr hello = "Hello", world = "World";
   constexpr cexprstr one = "one";
@@ -423,6 +444,21 @@ int main() {
   cout << "Index of " << twenty_one << ": "
        << integral_constant<size_t, index_of(sorted, twenty_one)>::value
        << '\n';
+
+  constexpr Enum enums{eleven, one};
+  constexpr Enum what_in_the_world{"what", "in", "the", "World"};
+
+  cout << enums << '\n';
+  cout << what_in_the_world << '\n';
+
+  cout << integral_constant<size_t, enums["eleven"]>::value << '\n';
+  cout << integral_constant<size_t, enums["two"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world["two"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world["what"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world["in"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world["the"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world["world"]>::value << '\n';
+  cout << integral_constant<size_t, what_in_the_world[world]>::value << '\n';
 
   return 0;
 }
