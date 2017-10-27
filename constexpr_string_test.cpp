@@ -271,11 +271,6 @@ constexpr const T *clower_bound(const T *first, const T *last, T t) {
   return first;
 }
 
-template <typename T, size_t N>
-constexpr size_t index_of(T t, cexprstr<T, N> c) {
-  return clower_bound(c.s, c.s + N, t) - c.s;
-}
-
 template <typename T>
 constexpr bool cbinary_search(const T *first, const T *last, T t) {
   auto lower = clower_bound(first, last, t);
@@ -290,6 +285,14 @@ constexpr bool cbinary_search(T t, cexprstr<T, N> c) {
 template <typename... T, size_t... N, typename U, size_t M>
 constexpr bool cbinary_search(Tuple<cexprstr<T, N>...> c, cexprstr<U, M> u) {
   return cbinary_search(u, c);
+}
+
+template <typename T, size_t N>
+constexpr size_t index_of(T t, cexprstr<T, N> c) {
+  auto low = clower_bound(c.s, c.s + N, t);
+  if (low == c.s + N || t < *low)
+    return -1;
+  return low - c.s;
 }
 
 template <typename... T, size_t... N>
@@ -309,7 +312,10 @@ constexpr size_t group_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
 
 template <typename... T, size_t... N, typename U, size_t M>
 constexpr size_t index_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
-  return count_to(t, group_of(t, c)) + index_of(c, t);
+  auto ind = index_of(c, t);
+  if (ind == -1)
+    return ind;
+  return count_to(t, group_of(t, c)) + ind;
 }
 
 int main() {
