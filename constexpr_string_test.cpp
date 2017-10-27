@@ -342,7 +342,7 @@ int main() {
 
   cout << integral_constant<size_t, cstrlen("hello")>::value << '\n';
 
-  size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 7, 5, 3, 5, 8, 9, 6, 9};
+  size_t unsorted[] = {3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9};
   csort(unsorted, unsorted + extent<decltype(unsorted)>{});
   for (auto s : unsorted)
     cout << s << ' ';
