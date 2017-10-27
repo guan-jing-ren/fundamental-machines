@@ -271,6 +271,11 @@ constexpr const T *clower_bound(const T *first, const T *last, T t) {
   return first;
 }
 
+template <typename T, size_t N>
+constexpr size_t index_of(T t, cexprstr<T, N> c) {
+  return clower_bound(c.s, c.s + N, t) - c.s;
+}
+
 template <typename T>
 constexpr bool cbinary_search(const T *first, const T *last, T t) {
   auto lower = clower_bound(first, last, t);
