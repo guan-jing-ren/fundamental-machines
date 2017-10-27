@@ -292,10 +292,24 @@ constexpr bool cbinary_search(Tuple<cexprstr<T, N>...> c, cexprstr<U, M> u) {
   return cbinary_search(u, c);
 }
 
+template <typename... T, size_t... N>
+constexpr size_t count_to(Tuple<cexprstr<T, N>...> t, size_t count) {
+  constexpr size_t n[] = {N...};
+  size_t s = 0;
+  for (size_t i = 0; i < count; ++i)
+    s += n[i];
+  return s;
+}
+
 template <typename... T, size_t... N, typename U, size_t M>
 constexpr size_t group_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
   constexpr size_t n[] = {T::size()...};
   return clower_bound(n, n + sizeof...(N), M) - n;
+}
+
+template <typename... T, size_t... N, typename U, size_t M>
+constexpr size_t index_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
+  return count_to(t, group_of(t, c)) + index_of(c, t);
 }
 
 int main() {
@@ -378,6 +392,31 @@ int main() {
   static_assert(cbinary_search(sorted, cexprstr{"one"}));
   static_assert(!cbinary_search(sorted, cexprstr{"aaa"}));
   static_assert(!cbinary_search(sorted, cexprstr{"two"}));
+
+  cout << "Count 0: " << integral_constant<size_t, count_to(sorted, 1)>::value
+       << '\n';
+  cout << "Count 1: " << integral_constant<size_t, count_to(sorted, 2)>::value
+       << '\n';
+  cout << "Count 2: " << integral_constant<size_t, count_to(sorted, 3)>::value
+       << '\n';
+  cout << "Count 3: " << integral_constant<size_t, count_to(sorted, 4)>::value
+       << '\n';
+  cout << "Count 4: " << integral_constant<size_t, count_to(sorted, 5)>::value
+       << '\n';
+  cout << "Count 5: " << integral_constant<size_t, count_to(sorted, 6)>::value
+       << '\n';
+
+  cout << "Group of " << forty_one << ": "
+       << integral_constant<size_t, group_of(sorted, forty_one)>::value << '\n';
+  cout << "Group of " << twenty_one << ": "
+       << integral_constant<size_t, group_of(sorted, twenty_one)>::value
+       << '\n';
+
+  cout << "Index of " << forty_one << ": "
+       << integral_constant<size_t, index_of(sorted, forty_one)>::value << '\n';
+  cout << "Index of " << twenty_one << ": "
+       << integral_constant<size_t, index_of(sorted, twenty_one)>::value
+       << '\n';
 
   return 0;
 }
