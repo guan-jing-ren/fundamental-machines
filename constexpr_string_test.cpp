@@ -205,6 +205,7 @@ template <typename T, typename... U> constexpr size_t count(T t, U... u) {
 template <typename... T> struct Tuple : T... {
   constexpr Tuple() = default;
   constexpr Tuple(T... t) : T(t)... {}
+  constexpr size_t size() { return sizeof...(T); }
 };
 
 template <typename... T> ostream &operator<<(ostream &out, Tuple<T...> t) {
@@ -284,6 +285,12 @@ constexpr bool cbinary_search(T t, cexprstr<T, N> c) {
 template <typename... T, size_t... N, typename U, size_t M>
 constexpr bool cbinary_search(Tuple<cexprstr<T, N>...> c, cexprstr<U, M> u) {
   return cbinary_search(u, c);
+}
+
+template <typename... T, size_t... N, typename U, size_t M>
+constexpr size_t group_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
+  constexpr size_t n[] = {T::size()...};
+  return clower_bound(n, n + sizeof...(N), M) - n;
 }
 
 int main() {
