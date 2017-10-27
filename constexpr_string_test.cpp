@@ -261,21 +261,19 @@ template <typename T, size_t... N> constexpr auto csorted(cexprstr<T, N>... s) {
 template <typename T>
 constexpr const T *clower_bound(const T *first, const T *last, T t) {
   while (first != last) {
-    if (!(t < *first))
-      return first;
-    auto mid = first + (last - first - 1) / 2;
-    if (t < *mid)
+    auto mid = first + (last - first) / 2;
+    if (*mid < t)
       first = ++mid;
     else
       last = mid;
   }
-  return last;
+  return first;
 }
 
 template <typename T>
 constexpr bool cbinary_search(const T *first, const T *last, T t) {
   auto lower = clower_bound(first, last, t);
-  return lower != last && *lower == t;
+  return lower != last && !(t < *lower);
 }
 
 template <typename T, size_t N>
