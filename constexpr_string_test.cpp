@@ -327,10 +327,8 @@ constexpr auto at_index(cexprstr<T, N> t, cexprstr<U, M>... u) {
     return t.s[offset];
   else if constexpr (sizeof...(U) > 0)
     return at_index<I, count>(u...);
-  else {
-    static_assert(I < count && !(I < C), "Index exceeds number of cexprst");
-    return "";
-  }
+  else
+    return nullptr;
 }
 
 template <size_t I, typename... T, size_t... N>
@@ -490,7 +488,8 @@ int main() {
   cout << "At index 1: " << what_in_the_world[EIdx<1>{}] << '\n';
   cout << "At index 2: " << what_in_the_world[EIdx<2>{}] << '\n';
   cout << "At index 3: " << what_in_the_world[EIdx<3>{}] << '\n';
-  // cout << "At index 4: " << what_in_the_world[EIdx<4>{}] << '\n';
+  constexpr auto eidx4 = what_in_the_world[EIdx<4>{}];
+  static_assert(eidx4 == nullptr);
 
   return 0;
 }
