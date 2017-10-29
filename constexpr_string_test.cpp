@@ -484,10 +484,15 @@ int main() {
   cout << integral_constant<size_t, what_in_the_world["world"]>::value << '\n';
   cout << integral_constant<size_t, what_in_the_world[world]>::value << '\n';
 
-  cout << "At index 0: " << what_in_the_world[EIdx<0>{}] << '\n';
-  cout << "At index 1: " << what_in_the_world[EIdx<1>{}] << '\n';
-  cout << "At index 2: " << what_in_the_world[EIdx<2>{}] << '\n';
-  cout << "At index 3: " << what_in_the_world[EIdx<3>{}] << '\n';
+  constexpr auto c_at0 = what_in_the_world[EIdx<0>{}];
+  constexpr auto c_at1 = what_in_the_world[EIdx<1>{}];
+  constexpr auto c_at2 = what_in_the_world[EIdx<2>{}];
+  constexpr auto c_at3 = what_in_the_world[EIdx<3>{}];
+
+  cout << "At index 0: " << c_at0 << '\n';
+  cout << "At index 1: " << c_at1 << '\n';
+  cout << "At index 2: " << c_at2 << '\n';
+  cout << "At index 3: " << c_at3 << '\n';
   constexpr auto eidx4 = what_in_the_world[EIdx<4>{}];
   static_assert(eidx4 == nullptr);
 
