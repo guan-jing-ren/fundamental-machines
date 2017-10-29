@@ -205,7 +205,7 @@ template <typename T, typename... U> constexpr size_t count(T t, U... u) {
 template <typename... T> struct Tuple : T... {
   constexpr Tuple() = default;
   constexpr Tuple(T... t) : T(t)... {}
-  constexpr size_t size() { return sizeof...(T); }
+  constexpr size_t size() const { return sizeof...(T); }
 };
 
 template <typename... T> ostream &operator<<(ostream &out, Tuple<T...> t) {
@@ -318,6 +318,26 @@ constexpr size_t index_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
   return count_to(t, group_of(t, c)) + ind;
 }
 
+template <size_t I, size_t C, typename T, size_t N, typename... U, size_t... M>
+constexpr auto at_index(cexprstr<T, N> t, cexprstr<U, M>... u) {
+  if constexpr (sizeof...(U) == 0 && C < I && !(N < I))
+    return t.s[I - C];
+  else {
+    constexpr size_t c[] = {M...};
+    if constexpr (I - C < N)
+      return t.s[I - C];
+    else
+      return at_index<I, C + N>(u...);
+  }
+}
+
+template <size_t I, typename... T, size_t... N>
+constexpr auto at_index(Tuple<cexprstr<T, N>...> t) {
+  return at_index<I, 0>(static_cast<cexprstr<T, N>>(t)...);
+}
+
+template <size_t N> struct EnumIndex { constexpr static size_t value = N; };
+
 template <typename T> struct Enum : T {
   template <typename... U> constexpr Enum(U... u) : T(csorted(u...)) {}
   template <size_t... N>
@@ -330,6 +350,10 @@ template <typename T> struct Enum : T {
   template <typename U, size_t N>
   constexpr size_t operator[](cexprstr<U, N> s) const {
     return index_of(static_cast<T>(*this), s);
+  }
+
+  template <size_t I> constexpr auto operator[](EnumIndex<I>) const {
+    return at_index<I>(static_cast<T>(*this));
   }
 };
 
@@ -459,6 +483,12 @@ int main() {
   cout << integral_constant<size_t, what_in_the_world["the"]>::value << '\n';
   cout << integral_constant<size_t, what_in_the_world["world"]>::value << '\n';
   cout << integral_constant<size_t, what_in_the_world[world]>::value << '\n';
+
+  cout << "At index 0: " << what_in_the_world[EnumIndex<0>{}] << '\n';
+  cout << "At index 1: " << what_in_the_world[EnumIndex<1>{}] << '\n';
+  cout << "At index 2: " << what_in_the_world[EnumIndex<2>{}] << '\n';
+  cout << "At index 3: " << what_in_the_world[EnumIndex<3>{}] << '\n';
+  // cout << "At index 4: " << what_in_the_world[EnumIndex<4>{}] << '\n';
 
   return 0;
 }
