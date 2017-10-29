@@ -320,14 +320,16 @@ constexpr size_t index_of(Tuple<cexprstr<T, N>...> t, cexprstr<U, M> c) {
 
 template <size_t I, size_t C, typename T, size_t N, typename... U, size_t... M>
 constexpr auto at_index(cexprstr<T, N> t, cexprstr<U, M>... u) {
-  if constexpr (sizeof...(U) == 0 && C < I && !(N < I))
-    return t.s[I - C];
+  constexpr auto offset = I - C;
+  constexpr auto count = C + N;
+
+  if constexpr (I < count && !(I < C))
+    return t.s[offset];
+  else if constexpr (sizeof...(U) > 0)
+    return at_index<I, count>(u...);
   else {
-    constexpr size_t c[] = {M...};
-    if constexpr (I - C < N)
-      return t.s[I - C];
-    else
-      return at_index<I, C + N>(u...);
+    static_assert(I < count && !(I < C), "Index exceeds number of cexprst");
+    return "";
   }
 }
 
@@ -336,7 +338,7 @@ constexpr auto at_index(Tuple<cexprstr<T, N>...> t) {
   return at_index<I, 0>(static_cast<cexprstr<T, N>>(t)...);
 }
 
-template <size_t N> struct EnumIndex { constexpr static size_t value = N; };
+template <size_t N> struct EIdx { constexpr static size_t value = N; };
 
 template <typename T> struct Enum : T {
   template <typename... U> constexpr Enum(U... u) : T(csorted(u...)) {}
@@ -352,7 +354,7 @@ template <typename T> struct Enum : T {
     return index_of(static_cast<T>(*this), s);
   }
 
-  template <size_t I> constexpr auto operator[](EnumIndex<I>) const {
+  template <size_t I> constexpr auto operator[](EIdx<I>) const {
     return at_index<I>(static_cast<T>(*this));
   }
 };
@@ -484,11 +486,11 @@ int main() {
   cout << integral_constant<size_t, what_in_the_world["world"]>::value << '\n';
   cout << integral_constant<size_t, what_in_the_world[world]>::value << '\n';
 
-  cout << "At index 0: " << what_in_the_world[EnumIndex<0>{}] << '\n';
-  cout << "At index 1: " << what_in_the_world[EnumIndex<1>{}] << '\n';
-  cout << "At index 2: " << what_in_the_world[EnumIndex<2>{}] << '\n';
-  cout << "At index 3: " << what_in_the_world[EnumIndex<3>{}] << '\n';
-  // cout << "At index 4: " << what_in_the_world[EnumIndex<4>{}] << '\n';
+  cout << "At index 0: " << what_in_the_world[EIdx<0>{}] << '\n';
+  cout << "At index 1: " << what_in_the_world[EIdx<1>{}] << '\n';
+  cout << "At index 2: " << what_in_the_world[EIdx<2>{}] << '\n';
+  cout << "At index 3: " << what_in_the_world[EIdx<3>{}] << '\n';
+  // cout << "At index 4: " << what_in_the_world[EIdx<4>{}] << '\n';
 
   return 0;
 }
