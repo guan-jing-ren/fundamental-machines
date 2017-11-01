@@ -351,8 +351,12 @@ template <typename T> struct Enum : T {
     return index_of(static_cast<T>(*this), s);
   }
 
-  template <size_t I> constexpr auto operator[](EIdx<I>) const {
+  template <size_t I> constexpr auto at() const {
     return at_index<I>(static_cast<T>(*this));
+  }
+
+  template <size_t I> constexpr auto operator[](EIdx<I>) const {
+    return at<I>();
   }
 };
 

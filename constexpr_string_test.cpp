@@ -129,8 +129,8 @@ int main() {
 
   constexpr auto c_at0 = what_in_the_world[EIdx<0>{}];
   constexpr auto c_at1 = what_in_the_world[EIdx<1>{}];
-  constexpr auto c_at2 = what_in_the_world[EIdx<2>{}];
-  constexpr auto c_at3 = what_in_the_world[EIdx<3>{}];
+  constexpr auto c_at2 = what_in_the_world.at<2>();
+  constexpr auto c_at3 = what_in_the_world.at<3>();
 
   cout << "At index 0: " << c_at0 << '\n';
   cout << "At index 1: " << c_at1 << '\n';
@@ -138,6 +138,8 @@ int main() {
   cout << "At index 3: " << c_at3 << '\n';
   constexpr auto eidx4 = what_in_the_world[EIdx<4>{}];
   static_assert(eidx4 == nullptr);
+  constexpr auto eidx4_2 = what_in_the_world.at<4>();
+  static_assert(eidx4_2 == nullptr);
 
   return 0;
 }
