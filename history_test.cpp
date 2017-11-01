@@ -89,12 +89,20 @@ int main() {
        << object->at(&Object::name) << '\n';
   auto old = object;
 
-  auto branch = old;
-  for (auto i = 0; i < 10'000'000; ++i)
-    branch = branch->modify(&Object::F, i);
-
   object =
       object->modify(&Object::field, 98)->modify(&Object::name, "Object 2");
+
+  {
+    auto branch = object;
+    for (auto i = 0; i < 10'000'000; ++i)
+      branch = branch->modify(&Object::F, i);
+
+    // while (branch) {
+    //   cout << "Branch::F: " << branch->at(&Object::F) << '\n';
+    //   branch = branch->back();
+    // }
+  }
+
   cout << "T-0  object: " << object->at(&Object::field) << ' '
        << object->at(&Object::name) << '\n';
   cout << "T-1  object: " << object->back()->at(&Object::field) << ' '
@@ -108,11 +116,6 @@ int main() {
   cout << object->back()->back()->back().get() << '\n';
   cout << old.get() << " vs " << object->back()->back()->initial().get()
        << '\n';
-
-  while (branch) {
-    cout << "Branch::F: " << branch->at(&Object::F) << '\n';
-    branch = branch->back();
-  }
 
   return 0;
 }
