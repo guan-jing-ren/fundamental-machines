@@ -30,7 +30,8 @@ public:
   }
 
   template <typename... V> static auto create(V &&... v) {
-    return make_shared<History>(private_constructor_tag{}, forward<V>(v)...);
+    return make_shared<const History>(private_constructor_tag{},
+                                      forward<V>(v)...);
   };
 
   template <typename V, typename W> auto modify(V T::*f, W &&w) const {
@@ -107,6 +108,11 @@ int main() {
   cout << object->back()->back()->back().get() << '\n';
   cout << old.get() << " vs " << object->back()->back()->initial().get()
        << '\n';
+
+  while (branch) {
+    cout << "Branch::F: " << branch->at(&Object::F) << '\n';
+    branch = branch->back();
+  }
 
   return 0;
 }
