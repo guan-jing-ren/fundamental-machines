@@ -20,6 +20,15 @@ public:
   History(private_constructor_tag, V &&... v)
       : base(make_shared<T>(forward<V>(v)...)) {}
 
+  ~History() {
+    auto *dustbin = get_if<shared_ptr<const History>>(&base);
+    while (dustbin && dustbin->unique()) {
+      auto previous = move(*dustbin);
+      base = move(previous->base);
+      dustbin = get_if<shared_ptr<const History>>(&base);
+    }
+  }
+
   template <typename... V> static auto create(V &&... v) {
     return make_shared<History>(private_constructor_tag{}, forward<V>(v)...);
   };
@@ -70,7 +79,7 @@ public:
 struct Object {
   int field = 42;
   string name = "Object 1";
-  long _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _A, _B, _C, _D, _E, _F;
+  long _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, A, B, C, D, E, F;
 };
 
 int main() {
@@ -78,6 +87,11 @@ int main() {
   cout << "T0   object: " << object->at(&Object::field) << ' '
        << object->at(&Object::name) << '\n';
   auto old = object;
+
+  auto branch = old;
+  for (auto i = 0; i < 10'000'000; ++i)
+    branch = branch->modify(&Object::F, i);
+
   object =
       object->modify(&Object::field, 98)->modify(&Object::name, "Object 2");
   cout << "T-0  object: " << object->at(&Object::field) << ' '
@@ -93,5 +107,6 @@ int main() {
   cout << object->back()->back()->back().get() << '\n';
   cout << old.get() << " vs " << object->back()->back()->initial().get()
        << '\n';
+
   return 0;
 }
