@@ -27,7 +27,7 @@ template <typename T, size_t N> struct cexprstr {
   }
 
   constexpr static size_t size() { return N; }
-  constexpr const T &operator[](size_t i) const { return s[i]; }
+  constexpr const T operator[](size_t i) const { return s[i]; }
   operator string() { return string{s, s + N}; }
 };
 
@@ -284,6 +284,11 @@ constexpr bool cbinary_search(T t, cexprstr<T, N> c) {
 template <typename... T, size_t... N, typename U, size_t M>
 constexpr bool cbinary_search(Tuple<cexprstr<T, N>...> c, cexprstr<U, M> u) {
   return cbinary_search(u, c);
+}
+
+template <typename... T> constexpr size_t index_of(...) {
+  static_assert(sizeof...(T) == 0);
+  return -1;
 }
 
 template <typename T, size_t N>
