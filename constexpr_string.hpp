@@ -204,7 +204,8 @@ template <typename T, typename... U> constexpr size_t count(T t, U... u) {
 template <typename... T> struct Tuple : T... {
   constexpr Tuple() = default;
   constexpr Tuple(T... t) : T(t)... {}
-  constexpr size_t size() const { return sizeof...(T); }
+  constexpr static size_t buckets() { return sizeof...(T); }
+  constexpr static size_t size() { return sum((T::size())...); }
 };
 
 template <typename... T> ostream &operator<<(ostream &out, Tuple<T...> t) {
